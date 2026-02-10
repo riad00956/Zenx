@@ -1,0 +1,62 @@
+services:
+  - type: web
+    name: zenx-web
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --worker-class eventlet -w 1 --threads 8 --timeout 120 --bind 0.0.0.0:$PORT wsgi:app
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: zenx-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: zenx-redis
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: BOT_TOKEN
+        sync: false
+      - key: ADMIN_ID
+        sync: false
+      - key: NODE_ENV
+        value: production
+    
+  - type: worker
+    name: zenx-worker
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: zenx-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: zenx-redis
+          property: connectionString
+    
+  - type: worker
+    name: zenx-bot
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python bot.py
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: zenx-db
+          property: connectionString
+    
+  - type: redis
+    name: zenx-redis
+    ipAllowList: []
+    plan: free
+    
+databases:
+  - name: zenx-db
+    plan: free
+    databaseName: zenx_db
+    user: zenx_user

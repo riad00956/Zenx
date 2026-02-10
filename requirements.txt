@@ -1,0 +1,5 @@
+telebot==0.0.5
+flask==2.3.3
+flask-socketio==5.3.4
+werkzeug==2.3.7
+python-dotenv==1.0.0
